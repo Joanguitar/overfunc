@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "orchpy"
+dynamic = ["version"]
+description = "Record and recall behavior in pytest tests"
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.8"
+keywords = ["measurements"]
+classifiers = [
+    "Framework :: Pytest",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = [
+]
+
+[project.optional-dependencies]
+test = ["pytest-cov>=4"]
+
+[project.urls]
+Homepage = "https://github.com/Joanguitar/orchpy"
+Repository = "https://github.com/Joanguitar/orchpy"
+Issues = "https://github.com/Joanguitar/orchpy/issues"
+
+[project.entry-points.pytest11]
+"orchpy.pytest_plugin" = "orchpy.pytest_plugin"
+
+[tool.setuptools.dynamic]
+version = { attr = "orchpy.version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--cov=orchpy",
+    "--cov-branch",
+    "--cov-report=term-missing",
+    "--cov-report=html:coverage",
+]
+
+[tool.coverage.run]
+omit = [
+    "src/orchpy/__init__.py",
+    "src/orchpy/pytest_plugin.py",
+]
