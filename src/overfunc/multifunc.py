@@ -1,7 +1,4 @@
-
-
 from functools import wraps
-from inspect import signature
 from types import MethodType
 from typing import Callable, Generic, Iterable
 from overfunc.typing import P, R, MultiFuncError
@@ -10,16 +7,20 @@ from overfunc.typing import P, R, MultiFuncError
 def _consolidate_validators(*validators: Callable[P, bool]) -> Callable[P, bool]:
     def validator(*args: P.args, **kwargs: P.kwargs) -> bool:
         return all(v(*args, **kwargs) for v in validators)
+
     return validator
 
 
 class MultiFunc(Generic[P, R]):
-    def __init__(self, func: Callable[P, R], ) -> None:
+    def __init__(
+        self,
+        func: Callable[P, R],
+    ) -> None:
         self.__func = func
         self.__as_classmethod = isinstance(func, classmethod)
         self.__funcs_n: list[tuple[Callable[P, R], Callable[P, bool]]] = []
         self.__funcs_p: list[tuple[Callable[P, R], Callable[P, bool], float]] = []
-    
+
     def __get__(self, instance: object | None, owner: type | None = None):
         if self.__as_classmethod:
             if owner is None:
@@ -29,7 +30,12 @@ class MultiFunc(Generic[P, R]):
             return self
         return MethodType(self, instance)
 
-    def _register(self, func: Callable[P, R], *validators: Callable[P, bool], priority: float | None = None) -> None:
+    def _register(
+        self,
+        func: Callable[P, R],
+        *validators: Callable[P, bool],
+        priority: float | None = None,
+    ) -> None:
         _func = wraps(self.__func)(func)
         validator = _consolidate_validators(*validators)
         if priority is None:
@@ -45,6 +51,7 @@ class MultiFunc(Generic[P, R]):
         def wrapper(func: Callable[P, R]) -> Callable[P, R]:
             self._register(func, *validators, priority=priority)
             return func
+
         return wrapper
 
     @property
@@ -59,22 +66,6 @@ class MultiFunc(Generic[P, R]):
         for func, val in self.__func_vals:
             if val(*args, **kwargs):
                 return func(*args, **kwargs)
-        raise MultiFuncError(f"Couldn't find implementation for {self.__func.__name__}.")
-
-
-class TypedFunc(MultiFunc[P, R]):
-    def register(
-        self,
-        *validators: Callable[P, bool],
-        priority: float | None = None,
-    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-        def wrapper(func: Callable[P, R]) -> Callable[P, R]:
-            def validator(*args: P.args, **kwargs: P.kwargs) -> bool:
-                try:
-                    signature(func).bind(*args, **kwargs)
-                except (TypeError, ValueError):
-                    return False
-                return True
-            self._register(func, validator, *validators, priority=priority)
-            return func
-        return wrapper
+        raise MultiFuncError(
+            f"Couldn't find implementation for {self.__func.__name__}."
+        )
