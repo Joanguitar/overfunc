@@ -1,6 +1,7 @@
 
 
 from functools import wraps
+from inspect import signature
 from types import MethodType
 from typing import Callable, Generic, Iterable
 from overfunc.typing import P, R, MultiFuncError
@@ -28,14 +29,21 @@ class MultiFunc(Generic[P, R]):
             return self
         return MethodType(self, instance)
 
-    def register(self, *validators: Callable[P, bool], priority: float | None = None):
-        def wrapper(func: Callable[P, R]):
-            _func = wraps(self.__func)(func)
-            validator = _consolidate_validators(*validators)
-            if priority is None:
-                self.__funcs_n.append((_func, validator))
-            else:
-                self.__funcs_p.append((_func, validator, priority))
+    def _register(self, func: Callable[P, R], *validators: Callable[P, bool], priority: float | None = None) -> None:
+        _func = wraps(self.__func)(func)
+        validator = _consolidate_validators(*validators)
+        if priority is None:
+            self.__funcs_n.append((_func, validator))
+        else:
+            self.__funcs_p.append((_func, validator, priority))
+
+    def register(
+        self,
+        *validators: Callable[P, bool],
+        priority: float | None = None,
+    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
+        def wrapper(func: Callable[P, R]) -> Callable[P, R]:
+            self._register(func, *validators, priority=priority)
             return func
         return wrapper
 
@@ -55,6 +63,18 @@ class MultiFunc(Generic[P, R]):
 
 
 class TypedFunc(MultiFunc[P, R]):
-    def register(self, priority float | None = None):
-        def wrapper(func: Callable[P, R]):
-            
+    def register(
+        self,
+        *validators: Callable[P, bool],
+        priority: float | None = None,
+    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
+        def wrapper(func: Callable[P, R]) -> Callable[P, R]:
+            def validator(*args: P.args, **kwargs: P.kwargs) -> bool:
+                try:
+                    signature(func).bind(*args, **kwargs)
+                except (TypeError, ValueError):
+                    return False
+                return True
+            self._register(func, validator, *validators, priority=priority)
+            return func
+        return wrapper
