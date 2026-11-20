@@ -3,14 +3,8 @@ from __future__ import annotations
 from typing import Callable, Self
 
 from overfunc.multifunc import MultiFunc, Register
-from overfunc.typing import P, R, RP, SupportsComparison
-
-
-def compose(a: Callable[P, R], b: Callable[[R], RP]) -> Callable[P, RP]:
-    def ab(*args: P.args, **kwargs: P.kwargs) -> RP:
-        return b(a(*args, **kwargs))
-
-    return ab
+from overfunc.typing import P, R, SupportsComparison
+from overfunc.util import compose, get_self, attr_getter, flip_op
 
 
 class CompareFuncRegister(Register[P, R]):
@@ -33,30 +27,27 @@ class CompareFuncRegister(Register[P, R]):
         ]
         return self.__class__(self.mfunc, *self.validators, *new_validators)
 
+    def __flop(
+        self,
+        op: Callable[[SupportsComparison], Callable[[SupportsComparison], bool]],
+        **values: SupportsComparison,
+    ) -> Self:
+        return self.__op(flip_op(op), **values)
+
     def eq(self, **values: SupportsComparison) -> Self:
-        return self.__op(
-            lambda expected: lambda actual: actual.__eq__(expected), **values
-        )
+        return self.__flop(lambda actual: actual.__eq__, **values)
 
     def le(self, **values: SupportsComparison) -> Self:
-        return self.__op(
-            lambda expected: lambda actual: actual.__le__(expected), **values
-        )
+        return self.__flop(lambda actual: actual.__le__, **values)
 
     def lt(self, **values: SupportsComparison) -> Self:
-        return self.__op(
-            lambda expected: lambda actual: actual.__lt__(expected), **values
-        )
+        return self.__flop(lambda actual: actual.__lt__, **values)
 
     def ge(self, **values: SupportsComparison) -> Self:
-        return self.__op(
-            lambda expected: lambda actual: actual.__ge__(expected), **values
-        )
+        return self.__flop(lambda actual: actual.__ge__, **values)
 
     def gt(self, **values: SupportsComparison) -> Self:
-        return self.__op(
-            lambda expected: lambda actual: actual.__gt__(expected), **values
-        )
+        return self.__flop(lambda actual: actual.__gt__, **values)
 
 
 class CompareFunc(MultiFunc[P, R]):
@@ -70,10 +61,15 @@ class CompareFunc(MultiFunc[P, R]):
     def _getter(self, key: str) -> Callable[P, SupportsComparison]:
         return self.__getters[key]
 
-    def with_getters(
-        self, **getters: Callable[P, SupportsComparison]
-    ) -> CompareFunc[P, R]:
-        return CompareFunc(self.__func, **self.__getters, **getters)
+    def with_getter(self, **getters: Callable[P, SupportsComparison]) -> Self:
+        return self.__class__(self.__func, **self.__getters, **getters)
+
+    def with_attr(self, **attr_names: str) -> Self:
+        getters = {
+            key: compose(get_self, attr_getter(attr_name))
+            for key, attr_name in attr_names.items()
+        }
+        return self.__class__(self.__func, **self.__getters, **getters)
 
     def register(self, *validators: Callable[P, bool], priority: float | None = None):
         return CompareFuncRegister(self, *validators, priority=priority)

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, Generic, Iterable
+from typing import Callable, Generic, Iterable, final
 from overfunc.typing import P, R, MultiFuncError
 
 
@@ -28,6 +28,14 @@ class Register(Generic[P, R]):
         self.mfunc._register(func, *self.validators, priority=self.priority)
         return func
 
+    def with_validator(self, *validators: Callable[P, bool]):
+        return self.__class__(
+            self.mfunc, *self.validators, *validators, priority=self.priority
+        )
+
+    def with_priority(self, priority: float | None = None):
+        return self.__class__(self.mfunc, *self.validators, priority=priority)
+
 
 class MultiFunc(Generic[P, R]):
     def __init__(
@@ -39,6 +47,7 @@ class MultiFunc(Generic[P, R]):
         self.__funcs_n: list[tuple[Callable[P, R], Callable[P, bool]]] = []
         self.__funcs_p: list[tuple[Callable[P, R], Callable[P, bool], float]] = []
 
+    @final
     def __get__(self, instance: object | None, owner: type | None = None):
         if self.__as_classmethod:
             if owner is None:
@@ -48,6 +57,7 @@ class MultiFunc(Generic[P, R]):
             return self
         return MethodType(self, instance)
 
+    @final
     def _register(
         self,
         func: Callable[P, R],
@@ -68,6 +78,7 @@ class MultiFunc(Generic[P, R]):
     ):
         return Register(self, *validators, priority=priority)
 
+    @final
     @property
     def __func_vals(self) -> Iterable[tuple[Callable[P, R], Callable[P, bool]]]:
         self.__funcs_p.sort(key=lambda v: v[-1], reverse=True)
@@ -76,6 +87,7 @@ class MultiFunc(Generic[P, R]):
         for _func, _val in self.__funcs_n:
             yield _func, _val
 
+    @final
     def __call__(self, *args, **kwargs) -> R:
         for func, val in self.__func_vals:
             if val(*args, **kwargs):

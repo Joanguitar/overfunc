@@ -3,7 +3,11 @@ from typing import ParamSpec, Protocol, TypeVar
 P = ParamSpec("P")
 R = TypeVar("R")
 RP = TypeVar("RP")
+S = TypeVar("S", bound=object)
+
 T_contra = TypeVar("T_contra", contravariant=True)
+T1 = TypeVar("T1")
+T2 = TypeVar("T2")
 
 
 class MultiFuncError(BaseException): ...

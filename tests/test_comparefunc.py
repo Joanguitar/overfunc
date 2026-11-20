@@ -54,7 +54,7 @@ def test_with_getters_adds_another_comparison_field() -> None:
         raise NotImplementedError
 
     compare = CompareFunc(choose, value=lambda value: value)
-    compare = compare.with_getters(first_letter=lambda value: value[0])
+    compare = compare.with_getter(first_letter=lambda value: value[0])
 
     @compare.register().eq(first_letter="a")
     def starts_with_a(value: str) -> str:
