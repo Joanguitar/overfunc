@@ -1,4 +1,4 @@
-from typing import ParamSpec, Protocol, TypeVar, LiteralString
+from typing import ParamSpec, Protocol, TypeVar
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -9,9 +9,15 @@ T_contra = TypeVar("T_contra", contravariant=True)
 class MultiFuncError(BaseException): ...
 
 
-class SupportsComparison(Protocol[T_contra]):
+class SupportsEqual(Protocol):
     def __eq__(self, value: object, /) -> bool: ...
+
+
+class SupportsComparison(SupportsEqual, Protocol[T_contra]):
     def __le__(self, other: T_contra, /) -> bool: ...
     def __lt__(self, other: T_contra, /) -> bool: ...
     def __ge__(self, other: T_contra, /) -> bool: ...
     def __gt__(self, other: T_contra, /) -> bool: ...
+
+
+V = TypeVar("V", bound=SupportsComparison)

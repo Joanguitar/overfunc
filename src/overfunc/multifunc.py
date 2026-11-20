@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from functools import wraps
 from types import MethodType
 from typing import Callable, Generic, Iterable
@@ -9,6 +11,22 @@ def _consolidate_validators(*validators: Callable[P, bool]) -> Callable[P, bool]
         return all(v(*args, **kwargs) for v in validators)
 
     return validator
+
+
+class Register(Generic[P, R]):
+    def __init__(
+        self,
+        mfunc: MultiFunc[P, R],
+        *validators: Callable[P, bool],
+        priority: float | None = None,
+    ):
+        self.mfunc = mfunc
+        self.validators = validators
+        self.priority = priority
+
+    def __call__(self, func: Callable[P, R]) -> Callable[P, R]:
+        self.mfunc._register(func, *self.validators, priority=self.priority)
+        return func
 
 
 class MultiFunc(Generic[P, R]):
@@ -47,12 +65,8 @@ class MultiFunc(Generic[P, R]):
         self,
         *validators: Callable[P, bool],
         priority: float | None = None,
-    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-        def wrapper(func: Callable[P, R]) -> Callable[P, R]:
-            self._register(func, *validators, priority=priority)
-            return func
-
-        return wrapper
+    ):
+        return Register(self, *validators, priority=priority)
 
     @property
     def __func_vals(self) -> Iterable[tuple[Callable[P, R], Callable[P, bool]]]:

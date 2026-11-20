@@ -1,7 +1,7 @@
 from inspect import signature
 from typing import Any, Callable, Literal, Union, get_args, get_origin, get_type_hints
 
-from overfunc.multifunc import MultiFunc
+from overfunc.multifunc import MultiFunc, Register
 from overfunc.typing import P, R
 
 
@@ -76,14 +76,14 @@ def _matches_type(value: object, annotation: object) -> bool:
         return False
 
 
-class TypedFunc(MultiFunc[P, R]):
-    def register(
-        self,
-        *validators: Callable[P, bool],
-        priority: float | None = None,
-    ) -> Callable[[Callable[P, R]], Callable[P, R]]:
-        def wrapper(func: Callable[P, R]) -> Callable[P, R]:
-            self._register(func, type_checker(func), *validators, priority=priority)
-            return func
+class TypedFuncRegister(Register):
+    def __call__(self, func: Callable[P, R]) -> Callable[P, R]:
+        self.mfunc._register(
+            func, type_checker(func), *self.validators, priority=self.priority
+        )
+        return func
 
-        return wrapper
+
+class TypedFunc(MultiFunc[P, R]):
+    def register(self, *validators: Callable[P, bool], priority: float | None = None):
+        return TypedFuncRegister(self, *validators, priority=priority)
