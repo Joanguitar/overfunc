@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, Generic, Iterable, final
+from typing import Callable, Generic, Iterable, Self, final
 from overfunc.typing import P, R, MultiFuncError
 
 
@@ -47,6 +47,12 @@ class MultiFunc(Generic[P, R]):
         self.__funcs_n: list[tuple[Callable[P, R], Callable[P, bool]]] = []
         self.__funcs_p: list[tuple[Callable[P, R], Callable[P, bool], float]] = []
 
+    def _clone(self) -> Self:
+        new = self.__class__(self.__func)
+        new.__funcs_n = self.__funcs_n
+        new.__funcs_p = self.__funcs_p
+        return new
+
     @final
     def __get__(self, instance: object | None, owner: type | None = None):
         if self.__as_classmethod:
@@ -57,6 +63,9 @@ class MultiFunc(Generic[P, R]):
             return self
         return MethodType(self, instance)
 
+    def _wraps(self, func: Callable[P, R]):
+        return wraps(self.__func)(func)
+
     @final
     def _register(
         self,
@@ -64,7 +73,7 @@ class MultiFunc(Generic[P, R]):
         *validators: Callable[P, bool],
         priority: float | None = None,
     ) -> None:
-        _func = wraps(self.__func)(func)
+        _func = self._wraps(func)
         validator = _consolidate_validators(*validators)
         if priority is None:
             self.__funcs_n.append((_func, validator))
