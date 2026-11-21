@@ -1,3 +1,5 @@
+"""Dispatch function implementations according to their argument type hints."""
+
 from inspect import signature
 from typing import Any, Callable, Literal, Union, get_args, get_origin, get_type_hints
 
@@ -6,10 +8,12 @@ from overfunc.typing import P, R
 
 
 def type_checker(func: Callable[P, R]) -> Callable[P, bool]:
+    """Build a predicate that checks calls against a function's parameter hints."""
     _sig = signature(func)
     _hints = get_type_hints(func)
 
     def validator(*args: P.args, **kwargs: P.kwargs) -> bool:
+        """Return whether the arguments bind and satisfy the annotated types."""
         try:
             bound = _sig.bind(*args, **kwargs)
         except (TypeError, ValueError):
@@ -34,6 +38,7 @@ def type_checker(func: Callable[P, R]) -> Callable[P, bool]:
 
 
 def _matches_type(value: object, annotation: object) -> bool:
+    """Check a value against supported runtime typing annotations."""
     if annotation is Any:
         return True
 
@@ -77,7 +82,10 @@ def _matches_type(value: object, annotation: object) -> bool:
 
 
 class TypedFuncRegister(Register):
+    """Register functions with an argument-type check preceding other validators."""
+
     def __call__(self, func: Callable[P, R]) -> Callable[P, R]:
+        """Register the function with its inferred type checker."""
         self.mfunc._register(
             func, type_checker(func), *self.validators, priority=self.priority
         )
@@ -85,5 +93,8 @@ class TypedFuncRegister(Register):
 
 
 class TypedFunc(MultiFunc[P, R]):
+    """Dispatch calls to implementations whose annotated argument types match."""
+
     def register(self, *validators: Callable[P, bool], priority: float | None = None):
+        """Create a registration builder that checks the function's type hints."""
         return TypedFuncRegister(self, *validators, priority=priority)
