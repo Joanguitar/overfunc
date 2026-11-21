@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, Generic, Iterable, Self, cast, final, overload
-from overfunc.typing import P, R, MultiFuncError
+from typing import Callable, Generic, Iterable, cast, final, overload
+from overfunc.typing import P, R, MultiFuncError, Self
 
 
 def _consolidate_validators(*validators: Callable[P, bool]) -> Callable[P, bool]:

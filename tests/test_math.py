@@ -108,5 +108,4 @@ def _(number: str) -> int:
 
 def test_mod11():
     for ii in [-20, 200, 1351, 1564897]:
-        val = ii % 11
         assert mod11(ii) == ii % 11

@@ -1,5 +1,7 @@
 """Dispatch function implementations according to their argument type hints."""
 
+from __future__ import annotations
+
 from inspect import signature
 from typing import (
     Any,

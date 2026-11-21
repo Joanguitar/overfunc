@@ -1,9 +1,11 @@
 """Dispatch function implementations by version ranges and tags."""
 
-from typing import Callable, Generic, Self
+from __future__ import annotations
+
+from typing import Callable, Generic
 
 from overfunc.comparefunc import CompareFunc, CompareFuncRegister, CompareDecorator
-from overfunc.typing import P, R, V, SupportsEqual
+from overfunc.typing import P, R, Self, V, SupportsEqual
 from overfunc.util import compose, get_self, attr_getter
 
 

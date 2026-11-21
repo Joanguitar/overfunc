@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Callable, Generic, Self
+from typing import Callable, Generic
 
 from overfunc.multifunc import MultiFunc, Register
-from overfunc.typing import P, R, SupportsComparison
+from overfunc.typing import P, R, Self, SupportsComparison
 from overfunc.util import compose, get_self, attr_getter, flip_op
 
 

@@ -9,14 +9,13 @@ description = "function overloads"
 readme = "README.md"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["measurements"]
 classifiers = [
     "Framework :: Pytest",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -26,6 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 dependencies = [
+    "typing_extensions>=4.0; python_version < '3.11'",
 ]
 
 [project.optional-dependencies]
@@ -50,3 +50,6 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html:coverage",
 ]
+
+[tool.coverage.report]
+exclude_also = ["except ImportError:"]
