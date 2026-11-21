@@ -52,8 +52,12 @@ def _matches_type(value: object, annotation: object) -> bool:
     if origin is not None:
         if not isinstance(value, origin):
             return False
-        if origin is list or origin is set:
-            if not isinstance(value, (list, set)):
+        if origin is list:
+            if not isinstance(value, list):
+                return False
+            return not types or all(_matches_type(item, types[0]) for item in value)
+        if origin is set:
+            if not isinstance(value, set):
                 return False
             return not types or all(_matches_type(item, types[0]) for item in value)
         if origin is dict:

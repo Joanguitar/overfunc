@@ -78,11 +78,11 @@ class CompareDecorator(Generic[P]):
         """Return a clone with the given getter functions added or replaced."""
         return self._clone(getters={**self._getters, **getters})
 
-    def with_attr(self, **attr_names: str) -> Self:
+    def with_attr(self, *attr: str) -> Self:
         """Return a clone with getters that read named attributes from arguments."""
         getters = {
-            key: compose(get_self, attr_getter(attr_name))
-            for key, attr_name in attr_names.items()
+            key: compose(get_self, attr_getter(key))
+            for key in attr
         }
         return self.with_getter(**getters)
 

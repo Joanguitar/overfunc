@@ -44,11 +44,11 @@ class VersionDecorator(CompareDecorator[P], Generic[P, V]):
 
     def with_version_from_attr(self, attr_name: str):
         """Configure the version getter to read the named argument attribute."""
-        self.with_version_getter(compose(get_self, attr_getter(attr_name)))
+        return self.with_version_getter(compose(get_self, attr_getter(attr_name)))
 
     def with_tag_getter(self, **getters: Callable[P, SupportsEqual]):
         """Add getters used to extract tag values."""
-        self.with_getter(*getters)
+        return self.with_getter(**getters)  # type: ignore
 
     def with_tag_from_attr(self, *tag: str):
         """Configure tag getters to read the named argument attributes."""

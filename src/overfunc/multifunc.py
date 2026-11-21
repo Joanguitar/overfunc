@@ -71,13 +71,14 @@ class MultiFunc(Generic[P, R]):
     @final
     def __get__(self, instance: object | None, owner: type | None = None):
         """Bind the dispatcher as a method when accessed through an instance."""
+        wself = wraps(self.__func)(self)
         if self.__as_classmethod:
             if owner is None:
-                return self
-            return MethodType(self, owner)
+                return wself
+            return MethodType(wself, owner)
         if instance is None:
-            return self
-        return MethodType(self, instance)
+            return wself
+        return MethodType(wself, instance)
 
     def _wraps(self, func: Callable[P, R]):
         """Apply the wrapped function's metadata to a registered implementation."""
