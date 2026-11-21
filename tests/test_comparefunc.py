@@ -115,6 +115,7 @@ def test_compare_decorator_builds_a_dispatcher() -> None:
     assert isinstance(dispatcher, CompareFunc)
     assert dispatcher(2) == "two"
 
+
 def test_decorator() -> None:
     class Number:
         def __init__(self, value: int) -> None:

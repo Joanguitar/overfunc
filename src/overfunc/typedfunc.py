@@ -1,7 +1,16 @@
 """Dispatch function implementations according to their argument type hints."""
 
 from inspect import signature
-from typing import Any, Callable, Literal, Union, get_args, get_origin, get_type_hints
+from typing import (
+    Any,
+    Callable,
+    Literal,
+    Union,
+    cast,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
 
 from overfunc.multifunc import MultiFunc, Register
 from overfunc.typing import P, R
@@ -53,23 +62,20 @@ def _matches_type(value: object, annotation: object) -> bool:
         if not isinstance(value, origin):
             return False
         if origin is list:
-            if not isinstance(value, list):
-                return False
-            return not types or all(_matches_type(item, types[0]) for item in value)
+            return not types or all(
+                _matches_type(item, types[0]) for item in cast(list, value)
+            )
         if origin is set:
-            if not isinstance(value, set):
-                return False
-            return not types or all(_matches_type(item, types[0]) for item in value)
+            return not types or all(
+                _matches_type(item, types[0]) for item in cast(set, value)
+            )
         if origin is dict:
-            if not isinstance(value, dict):
-                return False
             return not types or all(
                 _matches_type(key, types[0]) and _matches_type(item, types[1])
-                for key, item in value.items()
+                for key, item in cast(dict, value).items()
             )
         if origin is tuple and types:
-            if not isinstance(value, tuple):
-                return False
+            value = cast(tuple, value)
             if len(types) == 2 and types[1] is Ellipsis:
                 return all(_matches_type(item, types[0]) for item in value)
             return len(value) == len(types) and all(

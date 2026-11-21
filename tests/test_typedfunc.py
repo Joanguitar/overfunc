@@ -134,4 +134,7 @@ def test_supported_internal_type_matches_cover_edge_cases() -> None:
     assert _matches_type({}, dict)
     assert _matches_type((1, 2), tuple)
     assert _matches_type(frozenset({1}), frozenset[int])
+    assert _matches_type(None, None)
+    assert not _matches_type(1, None)
     assert not _matches_type(1, 42)
+    assert not _matches_type(1, list[int])

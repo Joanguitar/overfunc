@@ -71,10 +71,8 @@ class MultiFunc(Generic[P, R]):
     @final
     def __get__(self, instance: object | None, owner: type | None = None):
         """Bind the dispatcher as a method when accessed through an instance."""
-        wself = wraps(self.__func)(self)
+        wself = self._wraps(self)
         if self.__as_classmethod:
-            if owner is None:
-                return wself
             return MethodType(wself, owner)
         if instance is None:
             return wself

@@ -60,7 +60,11 @@ def test_version_class_decorator_configures_getters() -> None:
             self.version = version
             self.channel = channel
 
-        @VersionDecorator().with_version_from_attr("version").with_tag_from_attr("channel")
+        @(
+            VersionDecorator()
+            .with_version_from_attr("version")
+            .with_tag_from_attr("channel")
+        )
         def dispatcher(release: Release) -> str: ...
 
         @dispatcher.register().for_version(initial=2)
@@ -100,3 +104,28 @@ def test_version_dispatch_raises_when_no_rule_matches() -> None:
     assert dispatcher(3) == "current"
     with pytest.raises(MultiFuncError):
         dispatcher(1)
+
+
+def test_version_class_decorator_segments():
+    class Number:
+        def __init__(self, value: int) -> None:
+            self.value = value
+
+        @VersionDecorator().with_version_from_attr("value")
+        def what(self) -> str: ...
+
+        @what.register().for_version(final=0)
+        def _(self) -> str:
+            return "Negative"
+
+        @what.register().for_version(initial=0, final=10)
+        def _(self) -> str:
+            return "One digit"
+
+        @what.register().for_version(initial=10)
+        def _(self) -> str:
+            return "Large"
+
+    assert Number(-20).what() == "Negative"
+    assert Number(2).what() == "One digit"
+    assert Number(20).what() == "Large"

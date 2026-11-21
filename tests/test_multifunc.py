@@ -34,9 +34,7 @@ def test_registration_builder_adds_validators_and_priority() -> None:
     def classify(value: int) -> str: ...
 
     builder = (
-        classify.register()
-        .with_validator(lambda value: value > 0)
-        .with_priority(5)
+        classify.register().with_validator(lambda value: value > 0).with_priority(5)
     )
 
     @builder
