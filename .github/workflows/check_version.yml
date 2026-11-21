@@ -1,0 +1,38 @@
+name: Check package version
+
+on:
+  workflow_call:
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Get PyPi version
+        id: pypi-version
+        run: |
+          pip install overfunc
+          echo "version=$(python -c 'import pytest_record_replay; print(pytest_record_replay.__version__)')" >> "$GITHUB_OUTPUT"
+      - name: Get current version
+        id: current-version
+        run: |
+          pip install -e .
+          echo "version=$(python -c 'import pytest_record_replay; print(pytest_record_replay.__version__)')" >> "$GITHUB_OUTPUT"
+      - name: Check version
+        env:
+          PYPI_VERSION: ${{ steps.pypi-version.outputs.version }}
+          CURRENT_VERSION: ${{ steps.current-version.outputs.version }}
+        run: |
+          python - <<'PY'
+          import os
+          from packaging.version import Version
+
+          pypi_version = Version(os.environ["PYPI_VERSION"])
+          current_version = Version(os.environ["CURRENT_VERSION"])
+          if current_version <= pypi_version:
+              raise SystemExit(
+                  f"Current version must be greater than PyPI: "
+                  f"{current_version} <= {pypi_version}"
+              )
+          print(f"Current version is newer than PyPI: {current_version} > {pypi_version}")
+          PY
