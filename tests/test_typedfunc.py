@@ -1,4 +1,6 @@
-from typing import Any, Literal
+from __future__ import annotations
+
+from typing import Any, Literal, Optional
 
 import pytest
 
@@ -62,7 +64,7 @@ def test_rejects_calls_that_do_not_match_the_signature() -> None:
 def test_supports_any_none_union_literal_and_collection_annotations() -> None:
     def func(
         anything: Any,
-        optional: int | None,
+        optional: Optional[int],
         mode: Literal["a", "b"],
         names: set[str],
         pair: tuple[int, str],
