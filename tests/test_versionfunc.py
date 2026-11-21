@@ -5,8 +5,8 @@ import pytest
 from overfunc.typing import MultiFuncError
 from overfunc.version import __version__
 from overfunc.versionfunc import (
-    VersionDecorator,
-    VersionFunc,
+    VersionedDecorator,
+    VersionedFunc,
 )
 
 
@@ -14,7 +14,7 @@ def test_dispatches_by_version_interval_and_tag() -> None:
     def version(value: tuple[str, str]) -> tuple[str, str]:
         return value
 
-    @VersionDecorator(
+    @VersionedDecorator(
         version=version,
         channel=lambda value: "stable",
     )
@@ -38,7 +38,11 @@ def test_version_decorator_configures_getters() -> None:
             self.version = version
             self.channel = channel
 
-    @VersionDecorator().with_version_from_attr("version").with_tag_from_attr("channel")
+    @(
+        VersionedDecorator()
+        .with_version_from_attr("version")
+        .with_tag_from_attr("channel")
+    )
     def dispatcher(release: Release) -> str: ...
 
     @dispatcher.register().for_version(initial=2)
@@ -49,7 +53,7 @@ def test_version_decorator_configures_getters() -> None:
     def beta(release: Release) -> str:
         return "beta"
 
-    assert isinstance(dispatcher, VersionFunc)
+    assert isinstance(dispatcher, VersionedFunc)
     assert dispatcher(Release(2, "stable")) == "current"
     assert dispatcher(Release(1, "beta")) == "beta"
     with pytest.raises(MultiFuncError):
@@ -63,7 +67,7 @@ def test_version_class_decorator_configures_getters() -> None:
             self.channel = channel
 
         @(
-            VersionDecorator()
+            VersionedDecorator()
             .with_version_from_attr("version")
             .with_tag_from_attr("channel")
         )
@@ -77,7 +81,7 @@ def test_version_class_decorator_configures_getters() -> None:
         def beta(release: Release) -> str:
             return "beta"
 
-    assert isinstance(Release.dispatcher, VersionFunc)
+    assert isinstance(Release.dispatcher, VersionedFunc)
     assert Release(2, "stable").dispatcher() == "current"
     assert Release(1, "beta").dispatcher() == "beta"
     with pytest.raises(MultiFuncError):
@@ -85,7 +89,7 @@ def test_version_class_decorator_configures_getters() -> None:
 
 
 def test_version_tag_getters_can_be_added_directly() -> None:
-    @VersionDecorator().with_tag_getter(channel=lambda release: "stable")
+    @VersionedDecorator().with_tag_getter(channel=lambda release: "stable")
     def choose(release: object) -> str: ...
 
     @choose.register().for_tag(channel="stable")
@@ -96,7 +100,7 @@ def test_version_tag_getters_can_be_added_directly() -> None:
 
 
 def test_version_dispatch_raises_when_no_rule_matches() -> None:
-    @VersionDecorator(version=lambda value: value)
+    @VersionedDecorator(version=lambda value: value)
     def dispatcher(value: int) -> str: ...
 
     @dispatcher.register().for_version(initial=2)
@@ -113,7 +117,7 @@ def test_version_class_decorator_segments():
         def __init__(self, value: int) -> None:
             self.value = value
 
-        @VersionDecorator().with_version_from_attr("value")
+        @VersionedDecorator().with_version_from_attr("value")
         def what(self) -> str: ...
 
         @what.register().for_version(final=0)

@@ -9,7 +9,7 @@ from overfunc.typing import P, R, Self, V, SupportsEqual
 from overfunc.util import compose, get_self, attr_getter
 
 
-class VersionFuncRegister(CompareFuncRegister[P, R], Generic[P, R, V]):
+class VersionedFuncRegister(CompareFuncRegister[P, R], Generic[P, R, V]):
     """Add version-range and tag constraints to a function registration."""
 
     def for_version(self, initial: V | None = None, final: V | None = None) -> Self:
@@ -26,7 +26,7 @@ class VersionFuncRegister(CompareFuncRegister[P, R], Generic[P, R, V]):
         return self.eq(**tags)
 
 
-class VersionDecorator(CompareDecorator[P], Generic[P, V]):
+class VersionedDecorator(CompareDecorator[P], Generic[P, V]):
     """Configure version and tag getters for a version dispatcher."""
 
     def __init__(
@@ -56,12 +56,12 @@ class VersionDecorator(CompareDecorator[P], Generic[P, V]):
         """Configure tag getters to read the named argument attributes."""
         return self.with_attr(*tag)
 
-    def __call__(self, func: Callable[P, R]) -> VersionFunc[P, R, V]:
+    def __call__(self, func: Callable[P, R]) -> VersionedFunc[P, R, V]:
         """Wrap a function in a version dispatcher using the configured getters."""
-        return VersionFunc(func, **self._getters)  # type: ignore
+        return VersionedFunc(func, **self._getters)  # type: ignore
 
 
-class VersionFunc(CompareFunc[P, R], VersionDecorator[P, V], Generic[P, R, V]):
+class VersionedFunc(CompareFunc[P, R], VersionedDecorator[P, V], Generic[P, R, V]):
     """Dispatch implementations by version intervals and optional tag values."""
 
     def __init__(
@@ -78,4 +78,4 @@ class VersionFunc(CompareFunc[P, R], VersionDecorator[P, V], Generic[P, R, V]):
 
     def register(self, *validators: Callable[P, bool], priority: float | None = None):
         """Create a builder for registering version- and tag-guarded implementations."""
-        return VersionFuncRegister(self, *validators, priority=priority)
+        return VersionedFuncRegister(self, *validators, priority=priority)

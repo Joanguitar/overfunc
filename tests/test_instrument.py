@@ -1,6 +1,6 @@
 import pytest
 
-from overfunc.versionfunc import VersionDecorator
+from overfunc.versionfunc import VersionedDecorator
 
 
 class Instrument:
@@ -53,7 +53,7 @@ class ClassWithInstrument:
         return self.instrument.version
 
     instrument_decorator = (
-        VersionDecorator()
+        VersionedDecorator()
         .with_version_from_attr("instrument_version")
         .with_tag_from_attr("instrument_name")
     )
