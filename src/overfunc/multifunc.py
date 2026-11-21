@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from functools import wraps
 from types import MethodType
-from typing import Callable, Generic, Iterable, Self, final
+from typing import Callable, Generic, Iterable, Self, cast, final, overload
 from overfunc.typing import P, R, MultiFuncError
 
 
@@ -68,8 +68,20 @@ class MultiFunc(Generic[P, R]):
         new.__funcs_p = self.__funcs_p
         return new
 
+    @overload
+    def __get__(
+        self, instance: None, owner: type[object] | None = None
+    ) -> Callable[..., R]: ...
+
+    @overload
+    def __get__(
+        self, instance: object, owner: type[object] | None = None
+    ) -> Callable[..., R]: ...
+
     @final
-    def __get__(self, instance: object | None, owner: type | None = None):
+    def __get__(
+        self, instance: object | None, owner: type[object] | None = None
+    ) -> Callable[..., R]:
         """Bind the dispatcher as a method when accessed through an instance."""
         wself = self._wraps(self)
         if self.__as_classmethod:
@@ -80,7 +92,17 @@ class MultiFunc(Generic[P, R]):
 
     def _wraps(self, func: Callable[P, R]):
         """Apply the wrapped function's metadata to a registered implementation."""
-        return wraps(self.__func)(func)
+        dispatcher = cast(
+            Callable[P, R],
+            self.__func.__func__
+            if isinstance(self.__func, classmethod)
+            else self.__func,
+        )
+        implementation = cast(
+            Callable[P, R],
+            func.__func__ if isinstance(func, classmethod) else func,
+        )
+        return wraps(dispatcher)(implementation)
 
     @final
     def _register(

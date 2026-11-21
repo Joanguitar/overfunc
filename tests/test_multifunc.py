@@ -77,6 +77,7 @@ def test_dispatches_class_methods() -> None:
         def choose(cls, value: int) -> str: ...
 
         @choose.register(lambda cls, value: value > 0)
+        @classmethod
         def positive(cls, value: int) -> str:
             return "positive"
 

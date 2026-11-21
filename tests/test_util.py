@@ -1,4 +1,5 @@
 from overfunc.util import attr_getter, compose, flip_op, get_self
+from overfunc.typing import SupportsComparison
 
 
 def test_compose_applies_functions_in_order() -> None:
@@ -18,5 +19,11 @@ def test_attr_getter_reads_named_attributes() -> None:
 
 
 def test_flip_op_reverses_operand_order() -> None:
-    flipped_greater_than = flip_op(lambda actual: actual.__gt__)
-    assert flipped_greater_than(10)(20)
+    def gt(actual: SupportsComparison):
+        return actual.__gt__
+
+    flipped_gt = flip_op(gt)
+    for a, b in [(10, 20), (1, 2), ("a", "b"), (-5.1, 1.2), ("one", "one")]:
+        _gt = gt(a)(b)
+        assert isinstance(_gt, bool)
+        assert _gt == flipped_gt(b)(a)

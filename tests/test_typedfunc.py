@@ -73,11 +73,11 @@ def test_supports_any_none_union_literal_and_collection_annotations() -> None:
     check = type_checker(func)
 
     assert check(object(), None, "a", {"x", "y"}, (1, "x"), (1, 2, 3))
-    assert not check(object(), "one", "a", {"x"}, (1, "x"), (1, 2))
-    assert not check(object(), None, "c", {"x"}, (1, "x"), (1, 2))
-    assert not check(object(), None, "a", ["x"], (1, "x"), (1, 2))
-    assert not check(object(), None, "a", {"x"}, ("1", "x"), (1, 2))
-    assert not check(object(), None, "a", {"x"}, (1, "x"), (1, "two"))
+    assert not check(object(), "one", "a", {"x"}, (1, "x"), (1, 2))  # type: ignore
+    assert not check(object(), None, "c", {"x"}, (1, "x"), (1, 2))  # type: ignore
+    assert not check(object(), None, "a", ["x"], (1, "x"), (1, 2))  # type: ignore
+    assert not check(object(), None, "a", {"x"}, ("1", "x"), (1, 2))  # type: ignore
+    assert not check(object(), None, "a", {"x"}, (1, "x"), (1, "two"))  # type: ignore
 
 
 def test_supports_list_dict_tuple_and_unresolved_annotations() -> None:
@@ -92,10 +92,10 @@ def test_supports_list_dict_tuple_and_unresolved_annotations() -> None:
     check = type_checker(func)
 
     assert check([1, 2], {"a": 1}, (1, "x"), 42)
-    assert not check([1, "x"], {"a": 1}, (1, "x"), 42)
-    assert not check([1], {1: "x"}, (1, "x"), 42)
-    assert not check([1], {"a": 1}, (1,), 42)
-    assert not check([1], {"a": 1}, (1, 2), 42)
+    assert not check([1, "x"], {"a": 1}, (1, "x"), 42)  # type: ignore
+    assert not check([1], {1: "x"}, (1, "x"), 42)  # type: ignore
+    assert not check([1], {"a": 1}, (1,), 42)  # type: ignore
+    assert not check([1], {"a": 1}, (1, 2), 42)  # type: ignore
 
 
 def test_typed_dispatch_and_additional_validators() -> None:
