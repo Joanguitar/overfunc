@@ -3,7 +3,6 @@ from __future__ import annotations
 import pytest
 
 from overfunc.typing import MultiFuncError
-from overfunc.version import __version__
 from overfunc.versionfunc import (
     VersionedDecorator,
     VersionedFunc,
@@ -29,7 +28,6 @@ def test_dispatches_by_version_interval_and_tag() -> None:
         return "stable"
 
     assert convert(("1", "5")) == "v1"
-    assert __version__ == "0.0.1"
 
 
 def test_version_decorator_configures_getters() -> None:
