@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "overfunc"
-dynamic = ["version"]
+version = "0.1.1"
 description = "function overloads"
 readme = "README.md"
 license = "GPL-3.0-only"
@@ -35,9 +35,6 @@ test = ["pytest-cov>=4"]
 Homepage = "https://github.com/Joanguitar/overfunc"
 Repository = "https://github.com/Joanguitar/overfunc"
 Issues = "https://github.com/Joanguitar/overfunc/issues"
-
-[tool.setuptools.dynamic]
-version = { attr = "overfunc.version.__version__" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
